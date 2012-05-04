@@ -40,7 +40,8 @@ void build_list(void)
 
 void display (void) {
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glRotatef(01, 0.0, 1.0, 0.0);
+  glMatrixMode(GL_MODELVIEW);
+  glRotatef(01, 0.0, 1.0, 0.0);  
   glCallList(cubelist);
   //  glXSwapBuffers(dpy, win);
 }
