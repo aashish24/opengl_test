@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <vtkRenderWindow.h>
-#include <vtkTimerLog.h>
 
 GLuint cubelist;
 Display *dpy;
@@ -41,16 +39,58 @@ void build_list(void)
 void display (void) {
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glMatrixMode(GL_MODELVIEW);
-  glRotatef(01, 0.0, 1.0, 0.0);  
+  glRotatef(01, 0.0, 1.0, 0.0);
   glCallList(cubelist);
-  //  glXSwapBuffers(dpy, win);
+  glXSwapBuffers(dpy, win);
 }
 
 int main (int argc, char **argv)
 {
-  vtkRenderWindow* rw = vtkRenderWindow::New();
-  rw->SetSize(1024, 1024);
-  rw->Render();
+  dpy = XOpenDisplay(getenv("DISPLAY")?getenv("DISPLAY"):"0.0");
+   if (! dpy)
+   {
+       std::cerr << "error opening display\n";
+       exit(1);
+   }
+
+   int wattr[] = {
+       GLX_RGBA,
+       GLX_DOUBLEBUFFER,
+       GLX_RED_SIZE,    8,
+       GLX_GREEN_SIZE,  8,
+       GLX_BLUE_SIZE,   8,
+       None
+   };
+
+   XVisualInfo *vinf = glXChooseVisual(dpy, DefaultScreen(dpy), wattr);
+   if (! vinf)
+   {
+     std::cerr << "error getting visual\n";
+     exit(1);
+   }
+
+   GLXContext ctx = glXCreateContext(dpy, vinf, NULL, 1);
+   if (! ctx)
+   {
+     std::cerr << "unable to create glX context\n";
+     exit(1);
+   }
+
+   XSetWindowAttributes swaattr;
+   swaattr.colormap = XCreateColormap(dpy, DefaultRootWindow(dpy), vinf->visual, AllocNone);
+
+   win = XCreateWindow(dpy, DefaultRootWindow(dpy), 0, 0, 1024, 1024, 0,
+     24, InputOutput, vinf->visual, CWColormap, &swaattr);
+
+   if (! win)
+   {
+     std::cerr << "unable to create window\n";
+     exit(1);
+   }
+
+  XMapRaised(dpy, win);
+
+  glXMakeCurrent(dpy, win, ctx);
 
   setup_render();
   setup_states();
@@ -63,11 +103,8 @@ int main (int argc, char **argv)
 
   for (int i = 0; i < 1000; ++i)
     {
-    display();
-    rw->Frame();
+    display();    
     }
-
-  vtkTimerLog::DumpLogWithIndents(&std::cout, 0.0000001);
 
   uint64_t t2 = tsc();
   std::cerr << (t1 - t0)/2527069000.0 << " " << (t2 - t1)/2527069000.0 << "\n";

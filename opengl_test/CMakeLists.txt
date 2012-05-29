@@ -15,4 +15,3 @@ add_executable(nompidl dlist.C readGL.C prep_render.C)
 include_directories(${Boost_INCLUDE_DIRS})
 
 target_link_libraries(nompidl -lX11 -lGL)
-target_link_libraries(nompidl vtkRenderingOpenGL vtkIOCore vtkRenderingFreeTypeOpenGL vtkInteractionStyle)
