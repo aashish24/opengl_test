@@ -6,7 +6,6 @@
 #include <boost/algorithm/string.hpp>
 #include <GL/glx.h>
 
-
 using namespace std;
 
 double string_to_double( const std::string& s )

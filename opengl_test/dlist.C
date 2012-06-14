@@ -29,7 +29,7 @@ void setup_states()
 void build_list(void)
 {
   cubelist = glGenLists(1);
-  glNewList(cubelist,GL_COMPILE);
+  glNewList(cubelist,GL_COMPILE_AND_EXECUTE);
   glBegin(GL_TRIANGLES);
   render();
   glEnd();
@@ -40,8 +40,14 @@ void display (void) {
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glMatrixMode(GL_MODELVIEW);
   glRotatef(01, 0.0, 1.0, 0.0);
+  
+  uint64_t t1 = tsc();
   glCallList(cubelist);
+  uint64_t t2 = tsc();
+
+  std::cerr << t2 - t1 << std::endl;
   glXSwapBuffers(dpy, win);
+  glFinish();
 }
 
 int main (int argc, char **argv)
